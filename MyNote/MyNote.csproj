@@ -103,6 +103,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Exceptions\DatabaseUpdateException.cs" />
     <Compile Include="Login.xaml.cs">
       <DependentUpon>Login.xaml</DependentUpon>
     </Compile>
@@ -119,12 +120,13 @@
     <Compile Include="Exceptions\DatabaseConnectionException.cs" />
     <Compile Include="Exceptions\DatabaseInsertException.cs" />
     <Compile Include="UserCache.cs" />
-    <Compile Include="Utils\ContentTrimConverter.cs" />
     <Compile Include="Utils\DbConnectors.cs" />
     <Compile Include="Exceptions\MissingTextFieldException.cs" />
     <Compile Include="Exceptions\InvalidEmailFieldException.cs" />
     <Compile Include="Exceptions\InvalidPswdFieldException.cs" />
     <Compile Include="Exceptions\ValueNotExistingInDatabaseException.cs" />
+    <Compile Include="Utils\SettingsRetriever.cs" />
+    <Compile Include="Utils\SqlDataReaderExtensions.cs" />
     <Compile Include="Utils\Verifiers.cs" />
     <Page Include="Login.xaml">
       <SubType>Designer</SubType>
@@ -200,11 +202,12 @@
     <Resource Include="Media\strikethrough.png" />
     <Resource Include="Media\underline.png" />
     <Resource Include="Media\save-files.png" />
+    <Resource Include="Media\delete.png" />
     <Content Include="MyNoteDB.mdf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="MyNoteDB_log.ldf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <DependentUpon>MyNoteDB.mdf</DependentUpon>
     </Content>
   </ItemGroup>

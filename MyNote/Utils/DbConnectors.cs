@@ -1,37 +1,47 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.UI.WebControls.WebParts;
 using System.Windows;
+using System.Xml.Linq;
 
 namespace MyNote.Utils
 {
     internal class DbConnectors
     {
-        private string connString = "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\KK\\source\\repos\\MyNote\\MyNote\\MyNoteDB.mdf;Integrated Security=True";
+        private SettingsRetriever _settingsRetriever = new SettingsRetriever();
         public int RunInsertOrUpdateQuery(string query)
         {
             try
             {
-                using (SqlConnection connection = new SqlConnection(connString))
+                int rowsAffected = 0;
+                ConnectionStringSettings connStringSett = _settingsRetriever.GetConnectionString("connString");
+                using (SqlConnection connection = new SqlConnection(connStringSett.ConnectionString))
                 {
                     connection.Open();
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    SqlTransaction transaction = connection.BeginTransaction();
+                    using (SqlCommand command = new SqlCommand(query, connection, transaction))
                     {
-                        int rowsAffected = command.ExecuteNonQuery();
+                        rowsAffected = command.ExecuteNonQuery();
 
                         if (rowsAffected == 0)
                         {
+                            transaction.Rollback();
                             throw new DatabaseInsertException("Query insertion failed!");
                         }
-
-                        return rowsAffected;
                     }
+
+                    transaction.Commit();
+                    connection.Close();
                 }
+
+                return rowsAffected;
             }
             catch (Exception ex)
             {
@@ -54,7 +64,8 @@ namespace MyNote.Utils
             try
             {
                 List<User> users = new List<User>();
-                using (var connection = new SqlConnection(connString))
+                ConnectionStringSettings connStringSett = _settingsRetriever.GetConnectionString("connString");
+                using (SqlConnection connection = new SqlConnection(connStringSett.ConnectionString))
                 {
                     connection.Open();
 
@@ -75,7 +86,11 @@ namespace MyNote.Utils
                                     User user  = new User(id, fName, lName, email, login, pswd);
                                     users.Add(user);
                                 }
+
+                                reader.Close();
                             }
+
+                            connection.Close();
                         }
                     }
                     else
@@ -85,6 +100,53 @@ namespace MyNote.Utils
                 }
 
                 return users;
+            }
+            catch (Exception ex)
+            {
+                throw new DatabaseConnectionException(ex);
+            }
+        }
+        public List<Note> SelectNotesQuery(string query)
+        {
+            try
+            {
+                List<Note> notes = new List<Note>();
+                ConnectionStringSettings connStringSett = _settingsRetriever.GetConnectionString("connString");
+                using (SqlConnection connection = new SqlConnection(connStringSett.ConnectionString))
+                {
+                    connection.Open();
+
+                    if (connection.State == ConnectionState.Open)
+                    {
+                        using (var cmd = new SqlCommand(query, connection))
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var id = Guid.Parse(reader.GetString(0));
+                                    var creationDate = reader.GetDateTime(1);
+                                    var modyficationDate = reader.GetDateTime(2);
+                                    var content = SqlDataReaderExtensions.SafeGetString(reader, 3);
+                                    var title = reader.GetString(4);
+                                    var xaml = SqlDataReaderExtensions.SafeGetString(reader, 5);
+                                    Note note = new Note(id, creationDate, modyficationDate, title, content, xaml);
+                                    notes.Add(note);
+                                }
+
+                                reader.Close();
+                            }
+
+                            connection.Close();
+                        }
+                    }
+                    else
+                    {
+                        throw new DatabaseConnectionException($"Connection state: {connection.State.ToString()}.");
+                    }
+                }
+
+                return notes;
             }
             catch (Exception ex)
             {

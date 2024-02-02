@@ -24,71 +24,38 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                    <Grid Grid.Row="0" VerticalAlignment="Center" Margin="10,0,10,0" >
-                        <!-- Logo (Replace with your image) -->
-                        <Image Source="Media\Mynote_logo.png" Margin="10" Width="100px"/>
-                    </Grid>
+                <Grid Grid.Row="0" VerticalAlignment="Center" Margin="10,0,10,0" >
+                    <Image Source="Media\Mynote_logo.png" Margin="10" Width="100px"/>
+                </Grid>
 
-                    <!-- List of Note Class Items -->
-                <ListBox Grid.Row="1" Margin="10" ItemsSource="{Binding NotesList}">
-                    <!-- Define ItemTemplate for Note class items -->
+                <ListBox x:Name="NotesListBox" Grid.Row="1" Margin="10" ItemsSource="{Binding NotesList}" SelectionChanged="NotesListBox_SelectionChanged" HorizontalContentAlignment="Stretch">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <!-- Your Note Item Template Here -->
-                            <Grid Margin="5">
+                            <Grid Margin="0" MouseEnter="Grid_MouseEnter" MouseLeave="Grid_MouseLeave">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="auto" />
                                 </Grid.ColumnDefinitions>
-
-                                <!-- Title and Content -->
-                                <StackPanel>
-                                    <TextBlock Text="{Binding Title}" FontWeight="Bold"/>
-                                    <TextBlock TextTrimming="CharacterEllipsis" Text="{Binding Content, Converter={StaticResource ContentTrimConverter}}"/>
-                                </StackPanel>
-
-                                <!-- Trash Icon -->
-                                <Image Source="your-trash-icon.png" Grid.Column="1" Width="20" Height="20" Visibility="Hidden">
-                                    <Image.Style>
-                                        <Style TargetType="Image">
-                                            <Style.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Image.Style>
-                                    <!-- Handle delete action here -->
-                                    <Image.Triggers>
-                                        <EventTrigger RoutedEvent="MouseLeftButtonDown">
-                                            <BeginStoryboard>
-                                                <!-- Your deletion storyboard or command here -->
-                                            </BeginStoryboard>
-                                        </EventTrigger>
-                                    </Image.Triggers>
-                                </Image>
+                                <TextBlock Text="{Binding Title}" FontWeight="Bold" FontFamily="Microsoft YaHei UI" />
+                                <TextBlock Text="{Binding Content}" Grid.Column="0" TextWrapping="NoWrap" Margin="0,14,0,0"  FontFamily="Microsoft YaHei UI Light" TextTrimming="CharacterEllipsis"/>
+                                <Image x:Name="RemoveNoteBtn" Source="Media\delete.png" Grid.Column="1" Width="25" Height="25" HorizontalAlignment="Right" VerticalAlignment="Top" Visibility="Collapsed" MouseLeftButtonDown="RemoveNoteBtn_MouseLeftButtonDown"/>
                             </Grid>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
 
-
-                <!-- Sticky Bar with User Name and Log Out Icon -->
                 <Grid Grid.Row="2" VerticalAlignment="Bottom">
-                    <!-- Logged in User Name (Replace with binding to actual user name) -->
-                    <TextBlock Text="{Binding Path=LoggedInUser.FirstName}" Margin="20 10 125 10" FontSize="16" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="DisplayedLoggeduser" Margin="20 10 125 10" FontSize="16" VerticalAlignment="Center" FontFamily="Microsoft YaHei UI"/>
 
-                    <Button Grid.Column="1" HorizontalAlignment="Right" Margin="0,5,65,5" VerticalAlignment="Top"
-                        Command="{Binding AddNoteCommand}" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" >
+                    <Button Grid.Column="1" HorizontalAlignment="Right" Margin="0,5,65,5" VerticalAlignment="Top" Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" >
                         <StackPanel>
                             <Image x:Name="AddNewNoteBtn" Source="Media\plus.png" Width="20px" MouseLeftButtonDown="AddNewNoteBtn_MouseLeftButtonDown"/>
                         </StackPanel>
                     </Button>
-                    
-                    <Button Grid.Column="1" HorizontalAlignment="Right" Margin="0,5,10,5" VerticalAlignment="Top"
-                        Command="{Binding LogOutCommand}" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" Background="{StaticResource DarkTxt}">
+
+                    <Button Grid.Column="1" HorizontalAlignment="Right" Margin="0,5,10,5" VerticalAlignment="Top" Style="{StaticResource MaterialDesignFloatingActionMiniButton}" Background="{StaticResource DarkTxt}">
                         <StackPanel>
-                            <Image Source="Media\logout.png" Width="20px"/>
+                            <Image Source="Media\logout.png" Width="20px" MouseLeftButtonDown="LogOutCommand_MouseLeftButtonDown"/>
                         </StackPanel>
                     </Button>
                 </Grid>
@@ -99,65 +66,67 @@
 
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <Grid Grid.Row="0" >
-                    <WebBrowser />
+                    <TextBox x:Name="SelectedNoteName" Margin="10, 5" Text="{Binding SelectedTitle}" FontFamily="Microsoft YaHei UI" FontSize="14" />
                 </Grid>
 
-                <Grid Grid.Row="1" VerticalAlignment="Bottom" Background="{StaticResource LightBg}">
-                    <Button Margin="20,5,0,5" HorizontalAlignment="Left"
-                        Command="{Binding trBold}" Style="{StaticResource MaterialDesignFlatButton}">
+                <Grid Grid.Row="1" >
+                    <RichTextBox Name="SelectedNoteContent" Margin="10, 0, 10, 0" Width="Auto" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" FontFamily="Microsoft YaHei UI" FontSize="12">
+                        <FlowDocument>
+                            <Paragraph>
+                                <Run Text="{Binding SelectedContent}"/>
+                            </Paragraph>
+                        </FlowDocument>
+                    </RichTextBox>
+                </Grid>
+
+                <Grid Grid.Row="2" VerticalAlignment="Bottom" Background="{StaticResource LightBg}">
+                    <Button Margin="20,5,0,5" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFlatButton}" Click="Click_Bold">
                         <StackPanel>
                             <Image Source="Media\bold.png" Width="20px"/>
                         </StackPanel>
                     </Button>
-                    <Button Margin="75,5,0,5" HorizontalAlignment="Left"
-                        Command="{Binding trItalic}" Style="{StaticResource MaterialDesignFlatButton}">
+                    <Button Margin="75,5,0,5" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFlatButton}" Click="Click_Italic">
                         <StackPanel>
                             <Image Source="Media\italic.png" Width="20px"/>
                         </StackPanel>
                     </Button>
-                    <Button Margin="130,5,0,5" HorizontalAlignment="Left"
-                        Command="{Binding trUnder}" Style="{StaticResource MaterialDesignFlatButton}">
+                    <Button Margin="130,5,0,5" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFlatButton}" Click="Click_Underline">
                         <StackPanel>
                             <Image Source="Media\underline.png" Width="20px"/>
                         </StackPanel>
                     </Button>
-                    <Button Margin="185,5,0,5" HorizontalAlignment="Left"
-                        Command="{Binding trStrike}" Style="{StaticResource MaterialDesignFlatButton}">
+                    <Button Margin="185,5,0,5" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFlatButton}" Click="Click_Strikethrough">
                         <StackPanel>
                             <Image Source="Media\strikethrough.png" Width="20px"/>
                         </StackPanel>
                     </Button>
-                    <Button Margin="240,5,0,5" HorizontalAlignment="Left"
-                        Command="{Binding trList}" Style="{StaticResource MaterialDesignFlatButton}">
+                    <Button Margin="240,5,0,5" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFlatButton}" Click="Click_ApplyBulletList">
                         <StackPanel>
                             <Image Source="Media\list.png" Width="20px"/>
                         </StackPanel>
                     </Button>
-                    <Button Margin="295,5,0,5" HorizontalAlignment="Left"
-                        Command="{Binding trLeftAlign}" Style="{StaticResource MaterialDesignFlatButton}">
+                    <Button Margin="295,5,0,5" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFlatButton}" Click="Click_AlignLeft">
                         <StackPanel>
                             <Image Source="Media\left-align.png" Width="20px"/>
                         </StackPanel>
                     </Button>
-                    <Button Margin="350,5,0,5" HorizontalAlignment="Left"
-                        Command="{Binding trCenterAlign}" Style="{StaticResource MaterialDesignFlatButton}">
+                    <Button Margin="350,5,0,5" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFlatButton}" Click="Click_AlignCenter">
                         <StackPanel>
                             <Image Source="Media\center-align.png" Width="20px"/>
                         </StackPanel>
                     </Button>
-                    <Button Margin="405,5,0,5" HorizontalAlignment="Left"
-                        Command="{Binding trRightAlign}" Style="{StaticResource MaterialDesignFlatButton}">
+                    <Button Margin="405,5,0,5" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFlatButton}" Click="Click_AlignRight">
                         <StackPanel>
                             <Image Source="Media\right-align.png" Width="20px"/>
                         </StackPanel>
                     </Button>
-                    <Button Margin="460,5,0,5" HorizontalAlignment="Left"
-                        Command="{Binding trRightAlign}" Style="{StaticResource MaterialDesignFlatButton}">
+                    <Button Margin="460,5,0,5" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFlatButton}" Click="SaveButton_Click">
                         <StackPanel>
                             <Image Source="Media\save-files.png" Width="20px"/>
                         </StackPanel>

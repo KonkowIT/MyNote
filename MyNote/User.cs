@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyNote.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,6 +16,8 @@ namespace MyNote
         public string Email { get; set; }
         public string Login { get; set; }
         public string Password { get; set; }
+        DbConnectors _dbConnectors = new DbConnectors();
+
         public User(string firstName, string lastName, string email, string login, string password)
         {
             Id = Guid.NewGuid();
@@ -32,6 +35,6 @@ namespace MyNote
             Email = email;
             Login = login;
             Password = password;
-        }  
+        }
     }
 }
