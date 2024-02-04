@@ -36,5 +36,12 @@ namespace MyNote
             Login = login;
             Password = password;
         }
+        public List<Note> GetLoggedUserNotes()
+        {
+            DbConnectors _dbConnectors = new DbConnectors();
+            string getNotesForLoggeedUser = $"SELECT * FROM Notes n JOIN UsersNotes un ON n.NoteId = un.Note WHERE un.[User] = '{UserCache.LoggedInUser.Id}' ORDER BY n.ModyficationDate DESC;";
+            List<Note> list = _dbConnectors.SelectNotesQuery(getNotesForLoggeedUser);
+            return list;
+        }
     }
 }

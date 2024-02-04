@@ -25,11 +25,9 @@ namespace MyNote
 {
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        Note selectedNote;
-        static string caption = "MyNote";
-        static MessageBoxButton okButton = MessageBoxButton.OK;
+        internal Note selectedNote;
+        internal ObservableCollection<Note> _notesList = new ObservableCollection<Note>();
         public event PropertyChangedEventHandler PropertyChanged;
-        private ObservableCollection<Note> _notesList = new ObservableCollection<Note>();
 
         public ObservableCollection<Note> NotesList
         {
@@ -47,70 +45,55 @@ namespace MyNote
             {
                 DisplayLoginWindow();
             }
+            if (null == UserCache.LoggedInUser)
+            {
+                Application.Current.Shutdown();
+                return;
+            }
+            InitializeMyNote();
+        }
+        private void InitializeMyNote()
+        {
             DisplayedLoggeduser.Text = $"Hello {UserCache.LoggedInUser.FirstName}!";
-            var loggedUserNotes = GetLoggedUserNotes();
+            var loggedUserNotes = UserCache.LoggedInUser.GetLoggedUserNotes();
             foreach (Note n in loggedUserNotes)
             {
                 _notesList.Add(n);
             }
             NotesListBox.ItemsSource = NotesList;
+            SelectedNoteName.IsEnabled = false;
+            SelectedNoteContent.IsEnabled = false;
         }
-        public void LogOutCommand_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            _notesList.Clear();
-            UserCache.LoggedInUser = null;
-            Close();
-            DisplayLoginWindow();
-        }
-        private void DisplayLoginWindow()
+
+        internal void DisplayLoginWindow()
         {
             Login loginWindow = new Login();
             loginWindow.ShowInTaskbar = false;
             loginWindow.ShowDialog();
         }
-
-        private void AddNewNoteBtn_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            Note note = new Note();
-            try 
-            {
-                SelectedNoteContent.Document.Blocks.Clear();
-                note.AddNoteToDb();
-                _notesList.Add(note);
-                UpdateListBox();
-            }
-            catch (Exception ex)
-            {
-                MessageBoxImage icon = MessageBoxImage.Error;
-                MessageBox.Show(ex.Message, caption, okButton, icon);
-            }
-        }
-
         protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
-        private void UpdateListBox()
+        internal void UpdateListBox()
         {
             OnPropertyChanged(nameof(NotesList));
         }
-
-        internal static List<Note> GetLoggedUserNotes()
-        {
-            DbConnectors _dbConnectors = new DbConnectors();
-            string getNotesForLoggeedUser = $"SELECT * FROM Notes n JOIN UsersNotes un ON n.NoteId = un.Note WHERE un.[User] = '{UserCache.LoggedInUser.Id}' ORDER BY n.ModyficationDate DESC;";
-            List<Note> list = _dbConnectors.SelectNotesQuery(getNotesForLoggeedUser);
-            return list;
-        }
-
         private void NotesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             System.Windows.Controls.ListBox listbox = (System.Windows.Controls.ListBox)sender;
             Note newSelection = listbox.SelectedItem as Note;
 
-            if (newSelection != null) 
+            if (newSelection != null)
             {
+                if (SelectedNoteName.IsEnabled == false)
+                {
+                    SelectedNoteName.IsEnabled = true;
+                }
+                if (SelectedNoteContent.IsEnabled == false)
+                {
+                    SelectedNoteContent.IsEnabled = true;
+                }
                 selectedNote = newSelection;
                 SelectedNoteName.Text = newSelection.Title;
 
@@ -140,64 +123,6 @@ namespace MyNote
                 }
             }
         }
-
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (string.IsNullOrEmpty(SelectedNoteName.Text))
-            {
-                string msg = "Note title cannot be empty!";
-                MessageBoxImage icon = MessageBoxImage.Warning;
-                MessageBox.Show(msg, caption, okButton, icon);
-            }
-            else if (SelectedNoteName.Text.Length > 255) 
-            {
-                string msg = "Note title has to be shorter then 255 characters!";
-                MessageBoxImage icon = MessageBoxImage.Warning;
-                MessageBox.Show(msg, caption, okButton, icon);
-            }
-
-            selectedNote.Title = SelectedNoteName.Text;
-            TextRange textRange = new TextRange(SelectedNoteContent.Document.ContentStart, SelectedNoteContent.Document.ContentEnd);
-            string xamlContent;
-            using (MemoryStream ms = new MemoryStream())
-            {
-                textRange.Save(ms, DataFormats.Xaml);
-                xamlContent = Encoding.Default.GetString(ms.ToArray());
-            }
-
-            string text = textRange.Text.Trim();
-            selectedNote.Content = text;
-            selectedNote.XamlContent = xamlContent;
-            selectedNote.UpdateNote();
-        }
-
-        private void RemoveNoteBtn_MouseLeftButtonDown(object sender, RoutedEventArgs e)
-        {
-            if (sender is System.Windows.Controls.Image image)
-            {
-                if (image.DataContext is Note noteToRemove)
-                {
-                    string desc = "Are you sure that you want to remove this note?\nThis operation cannot be reversed";
-                    MessageBoxImage icon = MessageBoxImage.Question;
-                    MessageBoxButton ynButton = MessageBoxButton.YesNo;
-                    MessageBoxResult questResult = MessageBox.Show(desc, caption, ynButton, icon, MessageBoxResult.No);
-
-                    if (questResult == MessageBoxResult.Yes)
-                    {
-                        try
-                        {
-                            noteToRemove.RemoveNoteFromDb();
-                            _notesList.Remove(noteToRemove);
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBoxImage iconErr = MessageBoxImage.Error;
-                            MessageBox.Show(ex.Message, caption, okButton, iconErr);
-                        }
-                    }
-                }
-            }
-        }
         private void Grid_MouseEnter(object sender, MouseEventArgs e)
         {
             if (sender is Grid grid)
@@ -209,7 +134,6 @@ namespace MyNote
                 }
             }
         }
-
         private void Grid_MouseLeave(object sender, MouseEventArgs e)
         {
             if (sender is Grid grid)
@@ -221,107 +145,62 @@ namespace MyNote
                 }
             }
         }
-
         private TextRange GetSelectedText()
         {
             TextRange range = new TextRange(SelectedNoteContent.Selection.Start, SelectedNoteContent.Selection.End);
             return range;
         }
 
+        private void LogOutCommand_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            ButtonActions.LogOutCommand_MouseLeftButtonDown(this, e);
+        }
+        private void AddNewNoteBtn_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            ButtonActions.AddNewNoteBtn_MouseLeftButtonDown(this, e);
+        }
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            ButtonActions.SaveButton_Click(this, e);
+        }
+        private void RemoveNoteBtn_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            ButtonActions.RemoveNoteBtn_MouseLeftButtonDown(this, sender, e);
+        }
         private void Click_Bold(object sender, RoutedEventArgs e)
         {
-            TextRange rangeToChange = GetSelectedText();
-            object fontWeight = rangeToChange.GetPropertyValue(TextElement.FontWeightProperty);
-
-            if (fontWeight != null && fontWeight.Equals(FontWeights.Bold))
-            {
-                rangeToChange.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.Normal);
-            }
-            else
-            {
-                rangeToChange.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.Bold);
-            }
+            TextRange range = GetSelectedText();
+            ButtonActions.Click_Bold(range, sender, e);
         }
-
         private void Click_Italic(object sender, RoutedEventArgs e)
         {
-            TextRange rangeToChange = GetSelectedText();
-            object fontStyle = rangeToChange.GetPropertyValue(TextElement.FontStyleProperty);
-
-            if (fontStyle != null && fontStyle.Equals(FontStyles.Italic))
-            {
-                rangeToChange.ApplyPropertyValue(TextElement.FontStyleProperty, FontStyles.Normal);
-            }
-            else
-            {
-                rangeToChange.ApplyPropertyValue(TextElement.FontStyleProperty, FontStyles.Italic);
-            }
+            TextRange range = GetSelectedText();
+            ButtonActions.Click_Italic(range, sender, e);
         }
-
         private void Click_Underline(object sender, RoutedEventArgs e)
         {
-            TextRange rangeToChange = GetSelectedText();
-            object textDecorations = rangeToChange.GetPropertyValue(Inline.TextDecorationsProperty);
-
-            if (textDecorations != null && ((TextDecorationCollection)textDecorations).Contains(TextDecorations.Underline[0]))
-            {
-                rangeToChange.ApplyPropertyValue(Inline.TextDecorationsProperty, null);
-            }
-            else
-            {
-                rangeToChange.ApplyPropertyValue(Inline.TextDecorationsProperty, TextDecorations.Underline);
-            }
+            TextRange range = GetSelectedText();
+            ButtonActions.Click_Underline(range, sender, e);
         }
-
         private void Click_Strikethrough(object sender, RoutedEventArgs e)
         {
-            TextRange rangeToChange = GetSelectedText();
-            object textDecorations = rangeToChange.GetPropertyValue(Inline.TextDecorationsProperty);
-
-            if (textDecorations != null && ((TextDecorationCollection)textDecorations).Contains(TextDecorations.Strikethrough[0]))
-            {
-                rangeToChange.ApplyPropertyValue(Inline.TextDecorationsProperty, null);
-            }
-            else
-            {
-                rangeToChange.ApplyPropertyValue(Inline.TextDecorationsProperty, TextDecorations.Strikethrough);
-            }
+            TextRange range = GetSelectedText();
+            ButtonActions.Click_Strikethrough(range, sender, e);
         }
-
         private void Click_AlignLeft(object sender, RoutedEventArgs e)
         {
-            TextRange rangeToChange = GetSelectedText();
-            rangeToChange.ApplyPropertyValue(Paragraph.TextAlignmentProperty, TextAlignment.Left);
+            TextRange range = GetSelectedText();
+            ButtonActions.Click_AlignLeft(range, sender, e);
         }
-
         private void Click_AlignCenter(object sender, RoutedEventArgs e)
         {
-            TextRange rangeToChange = GetSelectedText();
-            rangeToChange.ApplyPropertyValue(Paragraph.TextAlignmentProperty, TextAlignment.Center);
+            TextRange range = GetSelectedText();
+            ButtonActions.Click_AlignCenter(range, sender, e);
         }
-
         private void Click_AlignRight(object sender, RoutedEventArgs e)
         {
-            TextRange rangeToChange = GetSelectedText();
-            rangeToChange.ApplyPropertyValue(Paragraph.TextAlignmentProperty, TextAlignment.Right);
-        }
-
-        private void Click_ApplyBulletList(object sender, RoutedEventArgs e)
-        {
-            TextPointer caretPosition = SelectedNoteContent.CaretPosition;
-
-            TextPointer start = caretPosition.GetLineStartPosition(0);
-            TextPointer end = caretPosition.GetLineStartPosition(1) ?? caretPosition.DocumentEnd;
-
-            Paragraph bulletParagraph = new Paragraph(new Run($"\u2022 {start.Paragraph}"));
-
-            FlowDocument flowDocument = SelectedNoteContent.Document as FlowDocument;
-
-            if (flowDocument != null)
-            {
-                flowDocument.Blocks.InsertBefore(start.Paragraph, bulletParagraph);
-                flowDocument.Blocks.Remove(start.Paragraph);
-            }
+            TextRange range = GetSelectedText();
+            ButtonActions.Click_AlignRight(range, sender, e);
         }
     }
 }

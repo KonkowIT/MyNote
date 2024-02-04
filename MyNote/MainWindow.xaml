@@ -6,7 +6,8 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:local="clr-namespace:MyNote"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow"
+        MinHeight="450" MinWidth="800">
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -76,7 +77,7 @@
                 </Grid>
 
                 <Grid Grid.Row="1" >
-                    <RichTextBox Name="SelectedNoteContent" Margin="10, 0, 10, 0" Width="Auto" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" FontFamily="Microsoft YaHei UI" FontSize="12">
+                    <RichTextBox Name="SelectedNoteContent" Margin="10, 0, 10, 0" Width="Auto" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" FontFamily="Microsoft YaHei UI" FontSize="12" >
                         <FlowDocument>
                             <Paragraph>
                                 <Run Text="{Binding SelectedContent}"/>
@@ -85,53 +86,48 @@
                     </RichTextBox>
                 </Grid>
 
-                <Grid Grid.Row="2" VerticalAlignment="Bottom" Background="{StaticResource LightBg}">
-                    <Button Margin="20,5,0,5" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFlatButton}" Click="Click_Bold">
+                <UniformGrid Grid.Row="2" VerticalAlignment="Bottom" Columns="8" Background="{StaticResource LightBg}">
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Click="Click_Bold">
                         <StackPanel>
                             <Image Source="Media\bold.png" Width="20px"/>
                         </StackPanel>
                     </Button>
-                    <Button Margin="75,5,0,5" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFlatButton}" Click="Click_Italic">
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Click="Click_Italic">
                         <StackPanel>
                             <Image Source="Media\italic.png" Width="20px"/>
                         </StackPanel>
                     </Button>
-                    <Button Margin="130,5,0,5" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFlatButton}" Click="Click_Underline">
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Click="Click_Underline">
                         <StackPanel>
                             <Image Source="Media\underline.png" Width="20px"/>
                         </StackPanel>
                     </Button>
-                    <Button Margin="185,5,0,5" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFlatButton}" Click="Click_Strikethrough">
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Click="Click_Strikethrough">
                         <StackPanel>
                             <Image Source="Media\strikethrough.png" Width="20px"/>
                         </StackPanel>
                     </Button>
-                    <Button Margin="240,5,0,5" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFlatButton}" Click="Click_ApplyBulletList">
-                        <StackPanel>
-                            <Image Source="Media\list.png" Width="20px"/>
-                        </StackPanel>
-                    </Button>
-                    <Button Margin="295,5,0,5" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFlatButton}" Click="Click_AlignLeft">
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Click="Click_AlignLeft">
                         <StackPanel>
                             <Image Source="Media\left-align.png" Width="20px"/>
                         </StackPanel>
                     </Button>
-                    <Button Margin="350,5,0,5" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFlatButton}" Click="Click_AlignCenter">
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Click="Click_AlignCenter">
                         <StackPanel>
                             <Image Source="Media\center-align.png" Width="20px"/>
                         </StackPanel>
                     </Button>
-                    <Button Margin="405,5,0,5" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFlatButton}" Click="Click_AlignRight">
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Click="Click_AlignRight">
                         <StackPanel>
                             <Image Source="Media\right-align.png" Width="20px"/>
                         </StackPanel>
                     </Button>
-                    <Button Margin="460,5,0,5" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFlatButton}" Click="SaveButton_Click">
+                    <Button Style="{StaticResource MaterialDesignFlatButton}" Click="SaveButton_Click">
                         <StackPanel>
                             <Image Source="Media\save-files.png" Width="20px"/>
                         </StackPanel>
                     </Button>
-                </Grid>
+                </UniformGrid>
             </Grid>
         </Border>
     </Grid>

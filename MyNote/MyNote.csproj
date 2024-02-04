@@ -120,6 +120,7 @@
     <Compile Include="Exceptions\DatabaseConnectionException.cs" />
     <Compile Include="Exceptions\DatabaseInsertException.cs" />
     <Compile Include="UserCache.cs" />
+    <Compile Include="Utils\ButtonActions.cs" />
     <Compile Include="Utils\DbConnectors.cs" />
     <Compile Include="Exceptions\MissingTextFieldException.cs" />
     <Compile Include="Exceptions\InvalidEmailFieldException.cs" />
